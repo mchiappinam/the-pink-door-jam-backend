@@ -3,6 +3,9 @@ var router = express.Router();
 var md5 = require('md5');
 var jwt = require('jsonwebtoken');
 
+const multer = require('multer');
+var fileExtension = require('file-extension')
+
 var mysql = require('mysql');
 
 var con = mysql.createConnection({
@@ -73,6 +76,61 @@ router.post('/login', async function (req, res, next) {
     res.send({ status: 0, error: error });
   }
 });
+
+
+
+//           ** IMAGE UPLOAD **
+
+// Configure Storage
+var storage = multer.diskStorage({
+
+  // Setting directory on disk to save uploaded files
+  destination: function (req, file, cb) {
+      cb(null, 'images')
+  },
+
+  // Setting name of file saved
+  filename: function (req, file, cb) {
+      cb(null, 'img-' + Date.now() + '.' + fileExtension(file.originalname))
+  }
+})
+
+var upload = multer({
+  storage: storage,
+  limits: {
+      //Limit: 8MB
+      fileSize: 8000000
+  },
+  fileFilter(req, file, cb) {
+      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+          //Error 
+          cb(new Error('Please upload JPG and PNG images only!'))
+      }
+      //Success 
+      cb(undefined, true)
+  }
+})
+
+router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
+  const file = req.file
+  console.log(req);
+  if (!file) {
+      const error = new Error('Please upload a file')
+      error.httpStatusCode = 400
+      return next(error)
+  }
+  res.status(200).send({
+      statusCode: 200,
+      status: 'success',
+      uploadedFile: file,
+      newFileName: file.filename
+  })
+
+}, (error, req, res, next) => {
+  res.status(400).send({
+      error: error.message
+  })
+})
 
 
 
