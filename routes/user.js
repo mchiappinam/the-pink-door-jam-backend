@@ -86,28 +86,28 @@ var storage = multer.diskStorage({
 
   // Setting directory on disk to save uploaded files
   destination: function (req, file, cb) {
-      cb(null, 'images')
+    cb(null, __dirname + "/../images");
   },
 
   // Setting name of file saved
   filename: function (req, file, cb) {
-      cb(null, 'img-' + Date.now() + '.' + fileExtension(file.originalname))
+    cb(null, 'img-' + Date.now() + '.' + fileExtension(file.originalname))
   }
 })
 
 var upload = multer({
   storage: storage,
   limits: {
-      //Limit: 8MB
-      fileSize: 8000000
+    //Limit: 8MB
+    fileSize: 1024 * 1024 * 8,
   },
   fileFilter(req, file, cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-          //Error 
-          cb(new Error('Please upload JPG and PNG images only!'))
-      }
-      //Success 
-      cb(undefined, true)
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      //Error 
+      cb(new Error('Please upload JPG and PNG images only!'))
+    }
+    //Success 
+    cb(undefined, true)
   }
 })
 
@@ -115,20 +115,20 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
   const file = req.file
   console.log(req);
   if (!file) {
-      const error = new Error('Please upload a file')
-      error.httpStatusCode = 400
-      return next(error)
+    const error = new Error('Please upload a file')
+    error.httpStatusCode = 400
+    return next(error)
   }
   res.status(200).send({
-      statusCode: 200,
-      status: 'success',
-      uploadedFile: file,
-      newFileName: file.filename
+    statusCode: 200,
+    status: 'success',
+    uploadedFile: file,
+    newFileName: file.filename
   })
 
 }, (error, req, res, next) => {
   res.status(400).send({
-      error: error.message
+    error: error.message
   })
 })
 

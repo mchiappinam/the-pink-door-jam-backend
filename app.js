@@ -7,8 +7,9 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 app.use('/', indexRouter);
-app.use('/images',express.static('images'))
+app.use(express.static(__dirname));
+//app.use("/images", express.static(__dirname+"/images"));
 
-app.listen(4000, () => {
-    console.log('listening on port 4000');
+app.listen(3000, () => {
+    console.log('listening on port 3000');
 })
