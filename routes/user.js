@@ -80,6 +80,49 @@ router.post('/login', async function (req, res, next) {
 
 
 //           ** IMAGE UPLOAD **
+//MySQL Upload
+//enabled: 0=false, 1=forAll, 2=staffOnly
+function insertImgSQL(fname) {
+  try {
+    const sql = `INSERT INTO products (filename, title, description, enabled) VALUES ( ?, ?, ?, ? )`
+    con.query(
+      sql, [fname, "Title 123", "Description 123", 1],
+      (err, result, fields) => {
+        if (err) {
+          console.log("Error: " + err);
+        } else {
+          //success
+          //console.log(result);
+        }
+      })
+  } catch (error) {
+    console.log("Errorc: " + error);
+  }
+}
+
+//enabled: 0=false, 1=forAll, 2=staffOnly
+router.get('/loadpics', async function (req, res, next) {
+  try {
+    const sql = `SELECT * FROM products`
+    con.query(
+      sql,
+      (err, result, fields) => {
+        if (undefined !== result && result.length) {
+          if (err) {
+            res.send({ status: 0, error: err });
+          } else {
+            res.send({ status: 1, data: result});
+            //console.log(result);
+          }
+        } else {
+          res.send({ status: 0, error: 'No products uploaded yet!' });
+        }
+
+      })
+  } catch (error) {
+    res.send({ status: 0, error: error });
+  }
+});
 
 // Configure Storage
 var storage = multer.diskStorage({
@@ -113,12 +156,13 @@ var upload = multer({
 
 router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
   const file = req.file
-  console.log(req);
+  //console.log(req);
   if (!file) {
     const error = new Error('Please upload a file')
     error.httpStatusCode = 400
     return next(error)
   }
+  insertImgSQL(file.filename);
   res.status(200).send({
     statusCode: 200,
     status: 'success',
