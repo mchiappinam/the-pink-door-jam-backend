@@ -9,6 +9,7 @@ app.use(express.json());
 app.use('/', indexRouter);
 app.use(express.static(__dirname));
 //app.use("/images", express.static(__dirname+"/images"));
+app.disable('etag');
 
 app.listen(3000, () => {
     console.log('listening on port 3000');

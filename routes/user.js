@@ -10,13 +10,16 @@ var mysql = require('mysql');
 
 var con = mysql.createConnection({
   host: "192.168.1.11",
-  user: "thepinkdoorjam",
-  password: "thepinkdoorjam123",
-  database: "users"
+  user: "thepinkdoorjam-u",
+  password: "c#:kGuN9M(w3>}gZ",
+  database: "thepinkdoorjam"
 });
 
 /* GET users listing. */
 router.post('/register', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
   try {
     let { username, email, password } = req.body;
 
@@ -50,6 +53,9 @@ router.post('/register', async function (req, res, next) {
 });
 
 router.post('/login', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
 
   try {
     let { username, password } = req.body;
@@ -90,18 +96,22 @@ function insertImgSQL(fname) {
       (err, result, fields) => {
         if (err) {
           console.log("Error: " + err);
+          return false;
         } else {
-          //success
-          //console.log(result);
+          return true;
         }
       })
   } catch (error) {
     console.log("Errorc: " + error);
+    return false;
   }
 }
 
 //enabled: 0=false, 1=forAll, 2=staffOnly
 router.get('/loadpics', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
   try {
     const sql = `SELECT * FROM products`
     con.query(
@@ -116,6 +126,33 @@ router.get('/loadpics', async function (req, res, next) {
           }
         } else {
           res.send({ status: 0, error: 'No products uploaded yet!' });
+        }
+
+      })
+  } catch (error) {
+    res.send({ status: 0, error: error });
+  }
+});
+
+//enabled: 0=false, 1=forAll, 2=staffOnly
+router.get('/loadpic:id', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+  try {
+    const sql = `SELECT * FROM products WHERE id = ?`
+    con.query(
+      sql, [req.params.id],
+      (err, result, fields) => {
+        if (undefined !== result && result.length) {
+          if (err) {
+            res.send({ status: 0, error: err });
+          } else {
+            res.send({ status: 1, data: result});
+            //console.log(result);
+          }
+        } else {
+          res.send({ status: 0, error: 'Product not found!' });
         }
 
       })
@@ -155,6 +192,9 @@ var upload = multer({
 })
 
 router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
   const file = req.file
   //console.log(req);
   if (!file) {
@@ -162,7 +202,15 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
     error.httpStatusCode = 400
     return next(error)
   }
-  insertImgSQL(file.filename);
+  if(!insertImgSQL(file.filename)) {
+    res.status(400).send({
+      statusCode: 400,
+      error: "Image uploaded but an error occurred establishing a database connection",
+      uploadedFile: file,
+      newFileName: file.filename
+    })
+    return;
+  }
   res.status(200).send({
     statusCode: 200,
     status: 'success',
@@ -172,6 +220,7 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
 
 }, (error, req, res, next) => {
   res.status(400).send({
+    statusCode: 400,
     error: error.message
   })
 })
