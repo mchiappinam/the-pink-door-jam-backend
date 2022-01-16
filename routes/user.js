@@ -113,7 +113,7 @@ router.get('/loadpics', async function (req, res, next) {
   res.header("Pragma", "no-cache");
   res.header("Expires", 0);
   try {
-    const sql = `SELECT * FROM products`
+    const sql = `SELECT * FROM products ORDER BY id DESC`
     con.query(
       sql,
       (err, result, fields) => {
@@ -121,7 +121,7 @@ router.get('/loadpics', async function (req, res, next) {
           if (err) {
             res.send({ status: 0, error: err });
           } else {
-            res.send({ status: 1, data: result});
+            res.send({ status: 1, data: result });
             //console.log(result);
           }
         } else {
@@ -148,7 +148,7 @@ router.get('/loadpic:id', async function (req, res, next) {
           if (err) {
             res.send({ status: 0, error: err });
           } else {
-            res.send({ status: 1, data: result});
+            res.send({ status: 1, data: result });
             //console.log(result);
           }
         } else {
@@ -202,7 +202,7 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
     error.httpStatusCode = 400
     return next(error)
   }
-  if(!insertImgSQL(file.filename)) {
+  if (!insertImgSQL(file.filename)) {
     res.status(400).send({
       statusCode: 400,
       error: "Image uploaded but an error occurred establishing a database connection",
@@ -225,6 +225,32 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
   })
 })
 
+
+
+router.put('/editpic:id', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+  try {
+    let { title, description } = req.body;
+
+    const sql = `UPDATE products SET title = ?, description = ? WHERE id = ?`
+    con.query(
+      sql, [title, description, req.params.id],
+      (err, result, fields) => {
+        if (err) {
+          res.send({ status: 0, error: err });
+        } else {
+          res.send({ status: 1, data: result });
+        }
+
+      })
+
+  } catch (error) {
+
+    res.send({ status: 0, error: error });
+  }
+});
 
 
 module.exports = router;
