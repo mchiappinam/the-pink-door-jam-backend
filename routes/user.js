@@ -202,7 +202,7 @@ router.post('/upload', upload.single('uploadedImage'), (req, res, next) => {
     error.httpStatusCode = 400
     return next(error)
   }
-  if (!insertImgSQL(file.filename)) {
+  if (insertImgSQL(file.filename)) {
     res.status(400).send({
       statusCode: 400,
       error: "Image uploaded but an error occurred establishing a database connection",
