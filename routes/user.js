@@ -253,4 +253,31 @@ router.put('/editpic:id', async function (req, res, next) {
 });
 
 
+
+router.put('/likes', async function (req, res, next) {
+  res.header("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.header("Pragma", "no-cache");
+  res.header("Expires", 0);
+  const uid = String(req.body.uid);
+  const post_id = String(req.body.post_id);
+
+  const values = [ uid, uid, post_id ]
+  console.log(values);
+  
+  //To be implemented soon
+
+    // const sql = `UPDATE products SET title = ?, description = ? WHERE id = ?`
+    // con.query(
+    //   sql, [uid, post_id],
+    //   (err, result, fields) => {
+    //     if (err) {
+    //       res.send({ status: 0, error: err });
+    //     } else {
+    //       res.send({ status: 1, data: result });
+    //     }
+
+    //   });
+});
+
+
 module.exports = router;
