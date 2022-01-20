@@ -92,7 +92,7 @@ function insertImgSQL(fname) {
   try {
     const sql = `INSERT INTO products (filename, title, description, enabled) VALUES ( ?, ?, ?, ? )`
     con.query(
-      sql, [fname, "Title 123", "Description 123", 1],
+      sql, [fname, "Just Added", "Just Added", 1],
       (err, result, fields) => {
         if (err) {
           console.log("Error: " + err);
@@ -254,6 +254,39 @@ router.put('/editpic:id', async function (req, res, next) {
 
 
 
+
+function isLikedByUser(uid, like_user_id) {
+  if ((like_user_id == null) || (uid == 0) || (uid == null)) {
+    return false;
+  }
+  var lkd = null;
+  lkd = like_user_id.split(',');
+  if (lkd.includes(uid)) {
+    return true;
+  }
+  return false;
+}
+
+function likeToggle(uid, like_user_id) {
+  if (((like_user_id == null) || (like_user_id == "")) && ((uid != 0) || (uid != null))) {
+    return uid;
+  }
+  var lkd = null;
+  lkd = like_user_id.split(',');
+  if (isLikedByUser(uid, like_user_id)) {
+    for (var i = 0; i < lkd.length; i++) {
+      if (lkd[i] == uid) {
+        lkd.splice(i, 1);
+      }
+    }
+  } else {
+    lkd.push(uid);
+  }
+  return lkd.join(",");
+};
+
+
+
 router.put('/likes', async function (req, res, next) {
   res.header("Cache-Control", "no-cache, no-store, must-revalidate");
   res.header("Pragma", "no-cache");
@@ -261,22 +294,31 @@ router.put('/likes', async function (req, res, next) {
   const uid = String(req.body.uid);
   const post_id = String(req.body.post_id);
 
-  const values = [ uid, uid, post_id ]
-  console.log(values);
-  
-  //To be implemented soon
+  // const values = [uid, uid, post_id]
+  // console.log(values);
 
-    // const sql = `UPDATE products SET title = ?, description = ? WHERE id = ?`
-    // con.query(
-    //   sql, [uid, post_id],
-    //   (err, result, fields) => {
-    //     if (err) {
-    //       res.send({ status: 0, error: err });
-    //     } else {
-    //       res.send({ status: 1, data: result });
-    //     }
 
-    //   });
+  const sql = `SELECT like_user_id FROM products WHERE id = ?`
+  con.query(
+    sql, [post_id],
+    function (err, result, fields) {
+      if (err) {
+        res.send({ status: 0, error: err });
+      } else {
+        const sql = `UPDATE products SET like_user_id = ? WHERE id = ?`
+        con.query(
+          sql, [(likeToggle(uid, JSON.parse(JSON.stringify(result))[0].like_user_id)), post_id],
+          (err, result, fields) => {
+            if (err) {
+              res.send({ status: 0, error: err });
+            } else {
+              res.send({ status: 1, data: result });
+            }
+
+          });
+      }
+
+    })
 });
 
 
